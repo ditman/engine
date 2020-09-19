@@ -13,7 +13,7 @@ class PersistedPlatformView extends PersistedLeafSurface {
   final double width;
   final double height;
 
-  late html.ShadowRoot _shadowRoot;
+  // late html.ShadowRoot _shadowRoot;
 
   PersistedPlatformView(this.viewId, this.dx, this.dy, this.width, this.height);
 
@@ -39,17 +39,24 @@ class PersistedPlatformView extends PersistedLeafSurface {
     // Enforce the effective size of the PlatformView.
     element.style.overflow = 'hidden';
 
-    _shadowRoot = element.attachShadow(<String, String>{'mode': 'open'});
-    final html.StyleElement _styleReset = html.StyleElement();
-    _styleReset.innerHtml = '''
-      :host {
-        all: initial;
-      }''';
-    _shadowRoot.append(_styleReset);
+    // _shadowRoot = element.attachShadow(<String, String>{'mode': 'open'});
+    // final html.StyleElement _styleReset = html.StyleElement();
+    // _styleReset.innerHtml = '''
+    //   :host {
+    //     all: initial;
+    //   }''';
+    // _shadowRoot.append(_styleReset);
+
+    // This wrapper substitutes the shadow root...
+    final wrapper = html.DivElement()..setAttribute('style', 'all: initial');
+
+    element.append(wrapper);
+
     final html.Element? platformView =
         ui.platformViewRegistry.getCreatedView(viewId);
     if (platformView != null) {
-      _shadowRoot.append(platformView);
+      // _shadowRoot.append(platformView);
+      wrapper.append(platformView);
     } else {
       html.window.console.warn('No platform view created for id $viewId');
     }
@@ -68,10 +75,11 @@ class PersistedPlatformView extends PersistedLeafSurface {
     // Set size of the root element created by the PlatformView.
     final html.Element? platformView =
         ui.platformViewRegistry.getCreatedView(viewId);
-    if (platformView != null) {
-      platformView.style
-        ..width = '${width}px'
-        ..height = '${height}px';
+    // This is uncomfortable, but we know `parent` is our wrapper!
+    final viewWrapper = platformView?.parent;
+    if (viewWrapper != null) {
+      // If I don't do it like this, it'll rewrite the whole computed style because of 'all'!
+      viewWrapper..setAttribute('style', 'all: initial; width: ${width}px; height: ${height}px');
     }
   }
 

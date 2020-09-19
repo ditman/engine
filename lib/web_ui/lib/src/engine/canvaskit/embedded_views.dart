@@ -104,8 +104,13 @@ class HtmlViewEmbedder {
       return;
     }
 
+    // Wrap the embedded view in a display:block element, so we never modify
+    // the view passed by the user, ever...
+    final wrapper = html.DivElement()..setAttribute('style', 'all: initial');
+
     // TODO(het): Support creation parameters.
-    html.Element embeddedView = factory(viewId!);
+    html.Element embeddedView = wrapper..append(factory(viewId!));
+
     _views[viewId] = embeddedView;
 
     _rootViews[viewId] = embeddedView;
@@ -164,9 +169,10 @@ class HtmlViewEmbedder {
 
   void _compositeWithParams(int viewId, EmbeddedViewParams params) {
     final html.Element platformView = _views[viewId]!;
-    platformView.style.width = '${params.size.width}px';
-    platformView.style.height = '${params.size.height}px';
-    platformView.style.position = 'absolute';
+    // platformView.style.width = '${params.size.width}px';
+    // platformView.style.height = '${params.size.height}px';
+    // platformView.style.position = 'absolute';
+    platformView.setAttribute('style', 'all:initial;width:${params.size.width}px;height:${params.size.height}px;position:absolute;');
 
     final int currentClippingCount = _countClips(params.mutators);
     final int? previousClippingCount = _clipCount[viewId];
